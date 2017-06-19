@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>First jQuery-Enabled Page</title>
+    
+
+
+
+    <script src="http://code.jquery.com/jquery-1.6.1.min.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script> 
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    
+   
+    <script>
+ 
+      var socket = io('http://interview.optumsoft.com');
+      socket.emit("subscribe", "temperature0");
+      socket.on("data", function(msg) {
+       
+      })
+ 
+$(document).ready(function(){
+$.get("http://interview.optumsoft.com/sensornames", function(data, status){
+    
+var tbody = $('#sensor_names tbody'),
+props = ["Sensor Names"];
+
+
+$.each(data, function(i, sensornames) {
+    
+    var tr = $('<tr>');
+    $('<td class="nr">').html(sensornames).appendTo(tr);  
+   $('<td>').html('<button class="subscribe">Subscribe</button>').appendTo(tr);
+    $('<td>').html('<button class="unsubscribe">Unsubscribe</button>').appendTo(tr);
+     tbody.append(tr);
+    }); 
+    
+    $(".subscribe").click(function() {
+    var $row = $(this).closest("tr");    // Find the row
+    var $text = $row.find(".nr").text(); // Find the text
+        socket.emit("subscribe", $text);
+        socket.on("data", function(msg) {
+        console.log("here",msg)
+      })
+    
+});
+    
+        $(".unsubscribe").click(function() {
+    var $row = $(this).closest("tr");    // Find the row
+    var $text = $row.find(".nr").text(); // Find the text
+    alert($text);
+});
+});
+
+});
+
+    </script>
+     
+    </head>
+    
+     <body>
+        <table id="sensor_names">
+            <thead>
+            <tr >
+                <th>Sensor Names</th>
+            </tr>
+            </thead>
+           <tbody></tbody> 
+        </table>
+         
+         <table id="sensor_config">
+            <thead>
+            <tr >
+                <th>Sensor config</th>
+            </tr>
+            </thead>
+           <tbody></tbody> 
+        </table>
+    </body>
+</html>
