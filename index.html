@@ -3,22 +3,17 @@
 
 <head>
     <title>First jQuery-Enabled Page</title>
-     <link href="http://localhost:3000/style.css" rel=stylesheet type="text/css"  />
     <script src="http://code.jquery.com/jquery-1.6.1.min.js"></script>
     <script src="/socket.io/socket.io.js"></script> 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-   <style>
-    .scroll{
-    overflow: scroll;
-    height: 200px;
-       }
-    </style>
+    <link href="/public/index.css" rel="stylesheet" type="text/css"/>
+    <script src="/public/canvasjs.min.js"></script>
+
 
 <script>
     var socket = io('http://interview.optumsoft.com');
     socket.emit("subscribe", "temperature0");
     socket.on("data", function(msg) {
-
     });
 
     $(document).ready(function(){
@@ -102,12 +97,89 @@
          });      
     }); //get request ends
 }); //document ready ends
+    window.onload = function () {
+
+		var dps = []; // dataPoints
+
+		var chart = new CanvasJS.Chart("chartContainer",{
+			title :{
+				text: "Temprature data"
+			},			
+			data: [{
+				type: "line",
+				dataPoints: dps 
+			}]
+		});
+        
+		var xVal = 0;
+		var yVal = 100;	
+		var updateInterval = 100;
+		
+		var updateChart = function (count) {
+			count = count || 1;
+			// count is number of times loop runs to generate random dataPoints.
+             socket.on("data", function(msg) {
+                 var dataLength = msg.length; // number of dataPoints visible at any point
+
+                // console.log("here",msg)
+                for (var property in msg) {
+               yValal = property.key;
+                xVal= property.val;
+                 dps.push({
+                     x:xVal,
+                     y:yVal
+                 });
+            };
+         
+            if (dps.length > dataLength)
+			{
+				dps.shift();				
+			}
+			
+//			for (var j = 0; j < count; j++) {	
+//				yVal = yVal +  Math.round(5 + Math.random() *(-5-5));
+//				dps.push({
+//					x: xVal,
+//					y: yVal
+//				});
+//				xVal++;
+//			};
+//			if (dps.length > dataLength)
+//			{
+//				dps.shift();				
+//			}
+			
+			chart.render();		
+            // generates first set of dataPoints
+		updateChart(dataLength); 
+        });
+		};
+
+		
+
+		// update chart after specified time. 
+		setInterval(function(){updateChart()}, updateInterval); 
+
+	}
 
 </script>
 
     </head>
         <body>
-           
+           <!DOCTYPE HTML>
+<html>
+
+<head>
+	<script type="text/javascript">
+	
+	</script>
+<!--	<script type="text/javascript" src="/assets/script/canvasjs.min.js"></script>-->
+</head>
+<body>
+	<div id="chartContainer" style="height: 300px; width:100%;">
+	</div>
+</body>
+</html>
              <table id="sensor_names">
                 <thead>
                     <tr >
