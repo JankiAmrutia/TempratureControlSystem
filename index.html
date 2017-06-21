@@ -3,80 +3,139 @@
 
 <head>
     <title>First jQuery-Enabled Page</title>
-    
-
-
-
+     <link href="http://localhost:3000/style.css" rel=stylesheet type="text/css"  />
     <script src="http://code.jquery.com/jquery-1.6.1.min.js"></script>
-
     <script src="/socket.io/socket.io.js"></script> 
-     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    
-   
-    <script>
- 
-      var socket = io('http://interview.optumsoft.com');
-      socket.emit("subscribe", "temperature0");
-      socket.on("data", function(msg) {
-       
-      })
- 
-$(document).ready(function(){
-$.get("http://interview.optumsoft.com/sensornames", function(data, status){
-    
-var tbody = $('#sensor_names tbody'),
-props = ["Sensor Names"];
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+   <style>
+    .scroll{
+    overflow: scroll;
+    height: 200px;
+       }
+    </style>
 
+<script>
+    var socket = io('http://interview.optumsoft.com');
+    socket.emit("subscribe", "temperature0");
+    socket.on("data", function(msg) {
 
-$.each(data, function(i, sensornames) {
-    
-    var tr = $('<tr>');
-    $('<td class="nr">').html(sensornames).appendTo(tr);  
-   $('<td>').html('<button class="subscribe">Subscribe</button>').appendTo(tr);
-    $('<td>').html('<button class="unsubscribe">Unsubscribe</button>').appendTo(tr);
-     tbody.append(tr);
-    }); 
-    
-    $(".subscribe").click(function() {
-    var $row = $(this).closest("tr");    // Find the row
-    var $text = $row.find(".nr").text(); // Find the text
-        socket.emit("subscribe", $text);
-        socket.on("data", function(msg) {
-        console.log("here",msg)
-      })
-    
-});
-    
-        $(".unsubscribe").click(function() {
-    var $row = $(this).closest("tr");    // Find the row
-    var $text = $row.find(".nr").text(); // Find the text
-    alert($text);
-});
-});
+    });
 
-});
+    $(document).ready(function(){
+        $.get("http://interview.optumsoft.com/sensornames", function(data, status){
+            var tbody = $('#sensor_names tbody'),
+                props = ["Sensor Names"];
+            $.each(data, function(i, sensornames) {
+                var tr = $('<tr>');
+                $('<td class="nr">').html(sensornames).appendTo(tr);  
+                $('<td>').html('<button class="subscribe">Subscribe</button>').appendTo(tr);
+                $('<td>').html('<button class="unsubscribe">Unsubscribe</button>').appendTo(tr);
+                tbody.append(tr);
+            }); //each ends here 
+            //function to subscribe to a sensor
+        $(".subscribe").click(function() {
+            var $row = $(this).closest("tr");    // Find the row
+            var $text = $row.find(".nr").text(); // Find the text
+            socket.emit("subscribe", $text);
+            alert("You have successfully subscribe to " +  $text);
+            socket.on("data", function(msg) {
+                // console.log("here",msg)
+                for (var property in msg) {
+                if (msg.hasOwnProperty(property)) {
+                console.log(property + " -> " + msg[property]);
+                }
+            }
 
-    </script>
-     
+            var globalCounter = 0;
+            var tbody = document.getElementById('tbody');
+            for (var i = 0; i < Object.keys(msg).length; i++) {
+            var tr = "<tr>";
+            if(msg.type == "init")
+            {
+                var dtime =msg.recent[i].key;
+                var date = new Date(dtime*1000);
+                // Hours part from the timestamp
+                var hours = date.getHours();
+                // Minutes part from the timestamp
+                var minutes = "0" + date.getMinutes();
+                // Seconds part from the timestamp
+                var seconds = "0" + date.getSeconds();
+                // Will display time in 10:30:23 format
+                var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+                for(var i=0; i<Object.keys(msg.recent).length;i++){
+                tr += "<td>" + formattedTime + "</td>" + "<td>" + msg.recent[i].val+ "</td>" + "</tr>"  ;
+                
+                tbody.innerHTML += tr;
+                } // inner for ends
+            } //if ends
+        }//for ends       
+            var globalCounter = 0;
+            var tbody = document.getElementById('tminute');
+            for (var i = 0; i < Object.keys(msg).length; i++) {
+            var tr = "<tr>";
+            if(msg.type == "init")
+            {
+                var dtime =msg.minute[i].key;
+                var date = new Date(dtime*1000);
+                // Hours part from the timestamp
+                var hours = date.getHours();
+                // Minutes part from the timestamp
+                var minutes = "0" + date.getMinutes();
+                // Seconds part from the timestamp
+                var seconds = "0" + date.getSeconds();
+                // Will display time in 10:30:23 format
+                var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+                for(var i=0; i<Object.keys(msg.minute).length;i++){
+                tr += "<td>" + formattedTime + "</td>" + "<td>" + msg.minute[i].val+ "</td>" + "</tr>"  ;
+                tbody.innerHTML += tr;
+                } // inner for ends
+            } //if ends
+        }//for ends   
+    });
+}); //subscribe ends
+            
+      //function to unsubscribe to a sensor
+         $(".unsubscribe").click(function() {
+             var $row = $(this).closest("tr");    // Find the row
+             var $text = $row.find(".nr").text(); // Find the text
+             alert($text);
+         });      
+    }); //get request ends
+}); //document ready ends
+
+</script>
+
     </head>
-    
-     <body>
-        <table id="sensor_names">
-            <thead>
-            <tr >
-                <th>Sensor Names</th>
-            </tr>
-            </thead>
-           <tbody></tbody> 
-        </table>
-         
-         <table id="sensor_config">
-            <thead>
-            <tr >
-                <th>Sensor config</th>
-            </tr>
-            </thead>
-           <tbody></tbody> 
-        </table>
-    </body>
+        <body>
+           
+             <table id="sensor_names">
+                <thead>
+                    <tr >
+                    <th>Sensor Names</th>
+                    </tr>
+                </thead>
+                <tbody></tbody> 
+            </table> 
+             <div class="scroll">
+            <table id="sensor_config">
+                <thead>
+                    <tr >
+                    <th>Recent</th>               
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody> 
+            </table>
+            </div>
+            <div class="scroll">
+            <table id="sensor_config">
+                <thead>
+                    <tr >
+                    <th>Minute data</th>               
+                    </tr>
+                </thead>
+                <tbody id="tminute"></tbody> 
+            </table>
+            </div>
+           
+        </body>
 </html>
